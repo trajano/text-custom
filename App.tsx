@@ -31,7 +31,6 @@ export default function App() {
       }
     }
   }
-  console.log(theme);
   return (
     <NativeBaseProvider theme={extendTheme(theme)}>
       <View style={styles.container}>

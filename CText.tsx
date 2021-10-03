@@ -21,12 +21,6 @@ type CTextStyle = {
     underline?: boolean;
     strikeThrough?: boolean;
 
-    // *TODO* unimplemented 
-    // sub
-    // highlight
-    // isTruncated
-    // noOfLines
-    // lineHeight
 }
 
 /**
@@ -114,7 +108,7 @@ export function CText({
     }
     return (<TextStyleContext.Provider value={contextProps} >
         <Text {...props} style={[style, textProps]}>{children}</Text>
-    </TextStyleContext.Provider >);
+    </TextStyleContext.Provider>);
 }
 
 /**
