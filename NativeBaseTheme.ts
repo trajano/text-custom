@@ -2,9 +2,9 @@ import { ColorModeOptions, ITheme as NBITheme } from "native-base";
 import { TextStyle } from "react-native";
 
 /**
- * NativeBase font sizes.  This includes string to allow custom font sizes.
+ * NativeBase sizes.  This includes string to allow custom font sizes.
  */
-export type FontSize =
+export type Size =
   | "2xs"
   | "xs"
   | "sm"
@@ -42,25 +42,33 @@ export type FontWeight =
   | "extraBlack"
   | string;
 
-type FontConfig = {
-  [fontFamily: string]: {
-    [nativeFontWeight: number]: {
-      normal?: string;
-      italic?: string;
-    };
-  };
+export type FontFamilyStyleConfig = {
+  /**
+   * Normal style font.  This is required, if italic is not present it will fallback to this style.
+   */
+  normal: string;
+  italic?: string;
+};
+export type FontFamilyConfig = {
+  [nativeFontWeight: number]: FontFamilyStyleConfig;
+  400: FontFamilyStyleConfig;
+};
+export type FontConfig = {
+  [fontFamily: string]: FontFamilyConfig;
 };
 
+
+
 /**
- * This is a typesafe version of the NativeBase theme.  The original ITheme 
+ * This is a typesafe version of the NativeBase theme.  The original ITheme
  * relies on `typeof` a theme, but that does not provide the necessary type
  * safety guarantees nor does it allow any meaningful extensions to a theme.
  */
 export type ITheme = {
-  fontSizes: { [fontSize: FontSize]: TextStyle["fontSize"] };
-  letterSpacings: { [fontSize: FontSize]: TextStyle["letterSpacing"] };
-  lineHeights: { [fontSize: FontSize]: TextStyle["lineHeight"] };
-  fonts: { [fontFamily: FontFamily]: string };
+  fontSizes: { [fontSize: Size]: TextStyle["fontSize"] };
+  letterSpacings: { [fontSize: Size]: TextStyle["letterSpacing"] };
+  lineHeights: { [fontSize: Size]: TextStyle["lineHeight"] };
+  fonts: { [fontFamily: FontFamily]: string | TextS };
   fontConfig: FontConfig;
   fontWeights: { [fontWeight: FontWeight]: number };
 

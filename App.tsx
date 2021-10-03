@@ -1,24 +1,45 @@
+import * as PlayfairDisplay from '@expo-google-fonts/playfair-display';
 import { StatusBar } from 'expo-status-bar';
-import { ITheme, NativeBaseProvider, useTheme } from 'native-base';
+import { extendTheme, ITheme, NativeBaseProvider, useTheme } from 'native-base';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { CText } from './CText';
-
+import { useExpoFonts, useExpoNativeBaseFontConfig } from './useExpoFonts';
 function Tx() {
 
   const theme: ITheme = useTheme();
   console.log(Object.keys(theme.colors));
-  console.log(theme.config);
-  // const {colors, letterSpacings, lineHeights, fontWeights ,fonts, fontSizes} = useTheme()
-  // console.log({ letterSpacings, lineHeights, fontWeights ,fonts, fontSizes});
+  console.log(theme.lineHeights);
   return null;
 }
 export default function App() {
+
+  const [loaded] = useExpoFonts([PlayfairDisplay]);
+  if (!loaded) {
+    return null;
+  }
+  const theme = {
+    fontConfig: useExpoNativeBaseFontConfig([PlayfairDisplay]),
+    fonts: {
+      body: "PlayfairDisplay"
+    },
+    letterSpacings: {
+      "5xl": "1em"
+    }
+  }
+  console.log(theme);
   return (
-    <NativeBaseProvider>
+    <NativeBaseProvider theme={extendTheme(theme)}>
       <View style={styles.container}>
         <Tx />
-        <CText bold>Open up <CText italic>App.tsx</CText> to start <CText bold={false}>working</CText> on your <Text style={{ color: 'red' }}>interop! <CText bold>REALLY!</CText></Text></CText>
+        <View>
+          <CText fontSize="4xl" fontFamily="body">
+            <CText bold>Open up <CText italic>App.tsx</CText> to start <CText bold={false}>working</CText> on your <Text style={{ color: 'red' }}>interop! <CText bold color="blue.200" fontSize="5xl">REALLY!</CText></Text></CText>
+          </CText>
+          <CText fontSize="4xl" fontFamily="body">
+            <CText bold>Open up <CText italic>App.tsx</CText> to start <CText bold={false}>working</CText> on your <Text style={{ color: 'red' }}>interop! <CText bold color="blue.200" fontSize="5xl">REALLY!</CText></Text></CText>
+          </CText>
+        </View>
         <StatusBar style="auto" />
       </View>
     </NativeBaseProvider>

@@ -1,8 +1,12 @@
-import { useTheme } from "native-base";
+import { themeTools, useTheme } from "native-base";
 import React, { createContext, PropsWithChildren, useContext } from "react";
 import { Text, TextProps, TextStyle } from "react-native";
-import { FontSize, FontWeight, ITheme } from "./NativeBaseTheme";
+import { Size, FontWeight, ITheme } from "./NativeBaseTheme";
 
+/**
+ * Context props.  These are values that are tracked in the context as they
+ * are not nestable in React Native text properly primarily due toe font.
+ */
 type CTextStyle = {
     /**
      * The **NativeBase** font-family.  So this is not the system font with a 
@@ -30,8 +34,16 @@ type NativeBaseTextUtilityProps = {
      * Shortcut for weight 700 or 400. This is overriden by fontWeight.
      */
     bold?: boolean;
+    /**
+     * Shortcut for text decoration underline
+     */
+    underline?: boolean;
     fontWeight?: FontWeight | TextStyle['fontWeight'];
-    fontSize?: FontSize | TextStyle['fontSize'];
+    /**
+     * The font size.  If the NativeBase font size is specified, it will automatically
+     * set the letter spacing as well.
+     */
+    fontSize?: Size | TextStyle['fontSize'];
 }
 
 type CTextProps = PropsWithChildren<
@@ -73,19 +85,22 @@ export function CText({
     fontStyle = fontStyle ?? parentFontStyle;
 
     let fontSize: TextStyle['fontSize'];
-    let lineHeight: TextStyle['lineHeight'];
     let letterSpacing: TextStyle['letterSpacing'];
     if (typeof newFontSize === "string") {
         fontSize = theme.fontSizes[newFontSize];
-        lineHeight = theme.lineHeights[newFontSize];
         letterSpacing = theme.letterSpacings[newFontSize];
     } else {
         fontSize = fontSize ?? newFontSize ?? parentFontSize;
-        lineHeight = lineHeight ?? newLineHeight ?? parentLineHeight;
         letterSpacing = letterSpacing ?? newLetterSpacing ?? parentLetterSpacing;
     }
 
-    const color = newColor ?? parentColor;
+    let color;
+    if (typeof newColor === "string") {
+        color = themeTools.getColor(theme, newColor);
+    }
+    color = color ?? parentColor;
+
+    const lineHeight = newLineHeight ?? parentLineHeight;
 
     const contextProps: CTextStyle = {
         fontFamily,
@@ -105,9 +120,9 @@ export function CText({
 function computeFontWeight(fontWeights: ITheme['fontWeights'], bold?: boolean, newFontWeight?: FontWeight | TextStyle['fontWeight'], parentFontWeight?: TextStyle['fontWeight']): TextStyle['fontWeight'] {
     let fontWeight = ((newFontWeight && (fontWeights[newFontWeight] as number).toString()) ?? (newFontWeight)) as TextStyle['fontWeight'];
     if (fontWeight === undefined && bold === true) {
-        fontWeight = "700";
+        fontWeight = "bold";
     } else if (fontWeight === undefined && bold === false) {
-        fontWeight = "400";
+        fontWeight = "normal";
     }
     fontWeight = fontWeight ?? parentFontWeight;
     return fontWeight;
@@ -134,16 +149,29 @@ function computeTextProps(theme: ITheme, contextProps: CTextStyle): TextStyle {
 
     }
 
+    // fontFamily can become undefined at this point due to `theme.fonts`
     if (fontFamily) {
         // at this point fontFamily should be resolved to a font that could be a
         // thene font or a system font.  So check if it is a theme font
 
         if (fontFamily in theme.fontConfig) {
-            // font family is managed by native base
-            throw new Error("doing this soon")
+            // Cast is needed to avoid rebuilding context props as fontFamily should already be present at this point.
+            console.log({ fontFamily })
+            fontFamily = resolveThemeFont(theme, fontFamily, contextProps);
         }
     }
     // at this point fontFamily should be a system font or undefined
     return { ...contextProps, fontFamily };
 
+}
+/**
+ * Resolve the theme font.  
+ * @param fontFamilyConfig font family config
+ * @param props text props, this assumes a font is managed already 
+ */
+function resolveThemeFont({ fontConfig, fontWeights }: ITheme, fontFamily: string, { fontWeight = "normal", fontStyle = "normal" }: CTextStyle): TextStyle['fontFamily'] {
+    const fontFamilyConfig = fontConfig[fontFamily];
+
+    // No need for guard on font weight nor font style as `normal` are guaranteed to be there
+    return fontFamilyConfig[fontWeights[fontWeight]][fontStyle];
 }
