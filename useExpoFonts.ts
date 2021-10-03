@@ -63,12 +63,10 @@ function reduceMeta(acc: FontConfig, current: ExpoFontMeta): FontConfig {
   };
 }
 export function useExpoNativeBaseFontConfig(fonts: ExpoFont[]): FontConfig {
-  const x = fonts
+  return fonts
     .flatMap(({ __metdata__, __metadata__, useFonts: _useFonts, ...entries }) =>
       Object.keys(entries)
     )
     .map(parseExpoFontMeta)
     .reduce(reduceMeta, {} as FontConfig);
-  console.log(x);
-  return x;
 }
