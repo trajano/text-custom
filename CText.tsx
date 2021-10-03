@@ -124,7 +124,7 @@ function resolveNativeFontStyle(theme: ITheme, fontFamily: string | undefined, f
 
         if (fontFamily in theme.fonts) {
             const themeFontFamily = theme.fonts[fontFamily];
-            if (typeof themeFontFamily !== "string") {
+            if (typeof themeFontFamily !== "string" && themeFontFamily !== undefined) {
                 throw new Error("not yet implemented");
             }
             fontFamily = themeFontFamily;
