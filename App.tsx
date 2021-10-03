@@ -8,7 +8,6 @@ import { useExpoFonts, useExpoNativeBaseFontConfig } from './useExpoFonts';
 function Tx() {
 
   const theme: ITheme = useTheme();
-  console.log(Object.keys(theme.colors));
   console.log(theme.lineHeights);
   return null;
 }
@@ -25,18 +24,24 @@ export default function App() {
     },
     letterSpacings: {
       "5xl": "1em"
+    },
+    components: {
+      Text: {
+        baseStyle: { fontSize: 'md' }
+      }
     }
   }
   console.log(theme);
   return (
     <NativeBaseProvider theme={extendTheme(theme)}>
       <View style={styles.container}>
-        <Tx />
         <View>
+          <CText italic>nyaa <CText>nested</CText> <CText bold>nested bold</CText> </CText>
+          <CText fontSize="4xl" underline bold>FOO <CText fontSize="md" underline bold>FOO</CText></CText>
           <CText fontSize="4xl" fontFamily="body">
             <CText bold>Open up <CText italic>App.tsx</CText> to start <CText bold={false}>working</CText> on your <Text style={{ color: 'red' }}>interop! <CText bold color="blue.200" fontSize="5xl">REALLY!</CText></Text></CText>
           </CText>
-          <CText fontSize="4xl" fontFamily="body">
+          <CText fontSize="4xl" fontFamily="body" underline>
             <CText bold>Open up <CText italic>App.tsx</CText> to start <CText bold={false}>working</CText> on your <Text style={{ color: 'red' }}>interop! <CText bold color="blue.200" fontSize="5xl">REALLY!</CText></Text></CText>
           </CText>
         </View>

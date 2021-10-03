@@ -57,7 +57,20 @@ export type FontConfig = {
   [fontFamily: string]: FontFamilyConfig;
 };
 
-
+/**
+ * Text props set for the font.  This allows setting `fontFamily` and it will configure these as the default props for the font.  *TODO*
+ * This is not part of NativeBase.
+ */
+export type FontStyleProp = TextStyle & {
+  /**
+   * The **NativeBase** font-family.  So this is not the system font with a
+   * specifc styling unless it is itself a system font that is not defined
+   * in the NativeBase theme.
+   */
+  fontFamily?: TextStyle["fontFamily"];
+  fontWeight?: TextStyle["fontWeight"];
+  fontSize?: TextStyle["fontSize"];
+};
 
 /**
  * This is a typesafe version of the NativeBase theme.  The original ITheme
@@ -68,7 +81,7 @@ export type ITheme = {
   fontSizes: { [fontSize: Size]: TextStyle["fontSize"] };
   letterSpacings: { [fontSize: Size]: TextStyle["letterSpacing"] };
   lineHeights: { [fontSize: Size]: TextStyle["lineHeight"] };
-  fonts: { [fontFamily: FontFamily]: string | TextS };
+  fonts: { [fontFamily: FontFamily]: string | FontStyleProp };
   fontConfig: FontConfig;
   fontWeights: { [fontWeight: FontWeight]: number };
 
@@ -81,6 +94,8 @@ export type ITheme = {
   space: any;
   shadows: any;
   opacity: any;
-  components: any;
+  components: {
+    [componentName: string]: any;
+  };
   config: ColorModeOptions;
 } & NBITheme;

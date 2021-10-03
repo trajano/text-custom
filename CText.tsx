@@ -1,11 +1,12 @@
-import { themeTools, useTheme } from "native-base";
+import { ITextProps, themeTools, useTheme, useThemeProps } from "native-base";
 import React, { createContext, PropsWithChildren, useContext } from "react";
 import { Text, TextProps, TextStyle } from "react-native";
-import { Size, FontWeight, ITheme } from "./NativeBaseTheme";
+import { FontWeight, ITheme, Size } from "./NativeBaseTheme";
 
 /**
  * Context props.  These are values that are tracked in the context as they
- * are not nestable in React Native text properly primarily due toe font.
+ * are not nestable in React Native text properly primarily due to the font or
+ * composite values
  */
 type CTextStyle = {
     /**
@@ -15,12 +16,19 @@ type CTextStyle = {
      */
     fontFamily?: TextStyle['fontFamily'];
     fontWeight?: TextStyle['fontWeight'];
-    fontSize?: TextStyle['fontSize'];
     fontStyle?: TextStyle['fontStyle'];
-    color?: TextStyle['color'];
-    lineHeight?: TextStyle['lineHeight'];
-    letterSpacing?: TextStyle['letterSpacing'];
+
+    underline?: boolean;
+    strikeThrough?: boolean;
+
+    // *TODO* unimplemented 
+    // sub
+    // highlight
+    // isTruncated
+    // noOfLines
+    // lineHeight
 }
+
 /**
  * These are NativeBase utility props shortcuts that override one or more
  * React Native Text style props.
@@ -35,9 +43,13 @@ type NativeBaseTextUtilityProps = {
      */
     bold?: boolean;
     /**
-     * Shortcut for text decoration underline
+     * Shortcut for text decoration line underline
      */
     underline?: boolean;
+    /**
+     * Shortcut for text decoration line line-through
+     */
+    strikeThrough?: boolean;
     fontWeight?: FontWeight | TextStyle['fontWeight'];
     /**
      * The font size.  If the NativeBase font size is specified, it will automatically
@@ -47,104 +59,81 @@ type NativeBaseTextUtilityProps = {
 }
 
 type CTextProps = PropsWithChildren<
-    Omit<CTextStyle, "fontWeight" | "fontSize"> & NativeBaseTextUtilityProps & TextProps>
+    Omit<CTextStyle, "fontWeight" | "fontSize" | "color"> & NativeBaseTextUtilityProps & TextProps>
 
 const TextStyleContext = createContext<CTextStyle>({})
 export function CText({
     children,
-    bold,
-    italic,
-    fontFamily: newFontFamily,
-    fontWeight: newFontWeight,
-    fontSize: newFontSize,
-    fontStyle: newFontStyle,
-    color: newColor,
-    lineHeight: newLineHeight,
-    letterSpacing: newLetterSpacing,
+    // fontFamily: newFontFamily,
+    // fontSize: newFontSize,
+    // color: newColor,
+    // lineHeight: newLineHeight,
+    // letterSpacing: newLetterSpacing,
+    underline,
+    strikeThrough,
     style,
-    ...props }: CTextProps): JSX.Element {
+    ...props }: ITextProps): JSX.Element {
     const theme: ITheme = useTheme();
 
     // obtain parent context
-    const { fontFamily: parentFontFamily, fontWeight: parentFontWeight, fontSize: parentFontSize, fontStyle: parentFontStyle, color: parentColor,
-        lineHeight: parentLineHeight,
-        letterSpacing: parentLetterSpacing,
+    const parentContext = useContext(TextStyleContext);
 
-    } = useContext(TextStyleContext);
 
-    const fontFamily = newFontFamily ?? parentFontFamily;
+    /**
+     * Props for the text of NativeBase.
+     */
+    let { fontFamily,
+        fontSize: tFontSize,
+        fontWeight: tFontWeight,
+        fontStyle: tFontStyle,
+        letterSpacing: tLetterSpacing,
+        color: newColor } = useThemeProps('Text', { ...parentContext, ...props });
 
-    const fontWeight = computeFontWeight(theme.fontWeights, bold, newFontWeight, parentFontWeight);
+    const fontWeight = recomputeFontWeightWithProps(tFontWeight, theme, props);
+    const fontStyle = recomputeFontStyleWithProps(tFontStyle, props);
+    const fontSize = recomputeValueWithProps<TextStyle['fontSize']>(tFontSize, theme.fontSizes, 'sm');
+    const letterSpacing = recomputeValueWithProps<TextStyle['letterSpacing']>(tLetterSpacing, theme.letterSpacings, 'md');
+    const color = themeTools.getColor(theme, newColor, newColor);
 
-    let fontStyle = newFontStyle;
-    if (fontStyle === undefined && italic === true) {
-        fontStyle = "italic";
-    } else if (fontStyle === undefined && italic === false) {
-        fontStyle = "normal";
-    }
-    fontStyle = fontStyle ?? parentFontStyle;
-
-    let fontSize: TextStyle['fontSize'];
-    let letterSpacing: TextStyle['letterSpacing'];
-    if (typeof newFontSize === "string") {
-        fontSize = theme.fontSizes[newFontSize];
-        letterSpacing = theme.letterSpacings[newFontSize];
-    } else {
-        fontSize = fontSize ?? newFontSize ?? parentFontSize;
-        letterSpacing = letterSpacing ?? newLetterSpacing ?? parentLetterSpacing;
-    }
-
-    let color;
-    if (typeof newColor === "string") {
-        color = themeTools.getColor(theme, newColor);
-    }
-    color = color ?? parentColor;
-
-    const lineHeight = newLineHeight ?? parentLineHeight;
+    const textDecorationLine = computeTextDecorationLine({ underline, strikeThrough }, parentContext);
 
     const contextProps: CTextStyle = {
         fontFamily,
-        fontSize,
         fontStyle,
         fontWeight,
-        color,
-        lineHeight,
-        letterSpacing
+        underline,
+        strikeThrough
     };
 
-    const textProps = computeTextProps(theme, contextProps);
-    return (<TextStyleContext.Provider value={contextProps}>
+    const textProps = {
+        ...resolveNativeFontStyle(theme, fontFamily, fontWeight, fontStyle),
+        fontSize,
+        letterSpacing,
+        color,
+        textDecorationLine
+    }
+    return (<TextStyleContext.Provider value={contextProps} >
         <Text {...props} style={[style, textProps]}>{children}</Text>
     </TextStyleContext.Provider >);
 }
-function computeFontWeight(fontWeights: ITheme['fontWeights'], bold?: boolean, newFontWeight?: FontWeight | TextStyle['fontWeight'], parentFontWeight?: TextStyle['fontWeight']): TextStyle['fontWeight'] {
-    let fontWeight = ((newFontWeight && (fontWeights[newFontWeight] as number).toString()) ?? (newFontWeight)) as TextStyle['fontWeight'];
-    if (fontWeight === undefined && bold === true) {
-        fontWeight = "bold";
-    } else if (fontWeight === undefined && bold === false) {
-        fontWeight = "normal";
-    }
-    fontWeight = fontWeight ?? parentFontWeight;
-    return fontWeight;
-}
+
 /**
  * Using the NativeBase theme, recompute the fontFamily value to
  * use one that is compatible with React Native Text.
  * @param theme NativeBase theme
- * @param contextProps context props.
+ * @param fontFamily font family to look for.
  */
-function computeTextProps(theme: ITheme, contextProps: CTextStyle): TextStyle {
-
-    /**
-     * Font family so far;
-     */
-    let fontFamily = contextProps.fontFamily;
+function resolveNativeFontStyle(theme: ITheme, fontFamily: string | undefined, fontWeight: TextStyle['fontWeight'] = "normal", fontStyle: TextStyle['fontStyle'] = "normal"): Pick<TextStyle, "fontFamily" | "fontWeight" | "fontStyle"> {
 
     if (fontFamily) {
         // at this point font family is defined, so check if it is an alias first
 
         if (fontFamily in theme.fonts) {
-            fontFamily = theme.fonts[fontFamily];
+            const themeFontFamily = theme.fonts[fontFamily];
+            if (typeof themeFontFamily !== "string") {
+                throw new Error("not yet implemented");
+            }
+            fontFamily = themeFontFamily;
         }
 
     }
@@ -155,23 +144,90 @@ function computeTextProps(theme: ITheme, contextProps: CTextStyle): TextStyle {
         // thene font or a system font.  So check if it is a theme font
 
         if (fontFamily in theme.fontConfig) {
-            // Cast is needed to avoid rebuilding context props as fontFamily should already be present at this point.
-            console.log({ fontFamily })
-            fontFamily = resolveThemeFont(theme, fontFamily, contextProps);
+            // No need for guard on font weight nor font style as `normal` are guaranteed to be there
+            return {
+                fontFamily: theme.fontConfig[fontFamily][parseInt(fontWeight)][fontStyle]
+            }
         }
     }
     // at this point fontFamily should be a system font or undefined
-    return { ...contextProps, fontFamily };
+    return { fontFamily, fontWeight, fontStyle };
 
 }
-/**
- * Resolve the theme font.  
- * @param fontFamilyConfig font family config
- * @param props text props, this assumes a font is managed already 
- */
-function resolveThemeFont({ fontConfig, fontWeights }: ITheme, fontFamily: string, { fontWeight = "normal", fontStyle = "normal" }: CTextStyle): TextStyle['fontFamily'] {
-    const fontFamilyConfig = fontConfig[fontFamily];
 
-    // No need for guard on font weight nor font style as `normal` are guaranteed to be there
-    return fontFamilyConfig[fontWeights[fontWeight]][fontStyle];
+function recomputeFontWeightWithProps(newFontWeight: TextStyle['fontWeight'] | FontWeight, { fontWeights }: ITheme, { bold }: Pick<CTextProps, "bold">): TextStyle['fontWeight'] {
+
+    let desiredFontWeightFromProps: "bold" | "normal" | undefined = undefined;
+    // Apply prop modifications first
+
+    if (bold === true) {
+        desiredFontWeightFromProps = "bold";
+    } else if (bold === false) {
+        desiredFontWeightFromProps = "normal";
+    }
+
+    console.log({
+        newFontWeight,
+        desiredFontWeightFromProps,
+    })
+
+    // font weight can be from native base or from RN
+    let desiredFontWeight = desiredFontWeightFromProps ?? newFontWeight;
+    if (desiredFontWeight !== undefined) {
+
+        let nbFontWeight: number = fontWeights[desiredFontWeight];
+        if (nbFontWeight !== undefined) {
+            desiredFontWeight = nbFontWeight.toString();
+        }
+
+    }
+
+    return desiredFontWeight as TextStyle['fontWeight'];
+}
+
+
+function recomputeValueWithProps<T, X extends Record<string, T | undefined> = Record<string, T | undefined>>(val: string | T, map: X, fallback: keyof X): T | undefined {
+    if (typeof val === "string") {
+        return map[val] ?? map[fallback];
+    } else {
+        return val;
+    }
+}
+
+
+function recomputeFontStyleWithProps(fontStyle: TextStyle['fontStyle'], { italic }: Pick<CTextProps, "italic">): TextStyle['fontStyle'] {
+    if (italic === true) {
+        return "italic";
+    } else if (italic === false) {
+        return "normal";
+    }
+    return fontStyle;
+}
+
+/**
+ * Comptues the text decoration line for strike through, underline or both.  This provides higher level control, but does not track overrides.
+ * @param current
+ * @param parent
+ * @returns textDecorationLine style value.
+ */
+function computeTextDecorationLine(
+    { underline: newUnderline, strikeThrough: newStrikeThrough }: Pick<CTextStyle, "underline" | "strikeThrough">,
+    { underline: parentUnderline, strikeThrough: parentStrikeThrough }: Pick<CTextStyle, "underline" | "strikeThrough">): TextStyle['textDecorationLine'] {
+
+    const underline = newUnderline ?? parentUnderline;
+    const strikeThrough = newStrikeThrough ?? parentStrikeThrough;
+
+    if (underline === undefined && strikeThrough === undefined) {
+        return undefined;
+    } else if (underline === false && strikeThrough === false) {
+        return "none";
+    } else if (underline === true && strikeThrough === true) {
+        return "underline line-through";
+    } else if (underline === true) {
+        return "underline";
+    } else if (strikeThrough === true) {
+        return "line-through";
+    } else {
+        throw new Error("should not get here");
+    }
 }
