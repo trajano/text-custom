@@ -1,5 +1,5 @@
 import React, { createContext, PropsWithChildren, useContext } from "react";
-import { TextProps, TextStyle, Text } from "react-native";
+import { Text, TextProps, TextStyle } from "react-native";
 
 type CTextStyle = {
     fontFamily?: TextStyle['fontFamily'];
@@ -7,6 +7,8 @@ type CTextStyle = {
     fontSize?: TextStyle['fontSize'];
     fontStyle?: TextStyle['fontStyle'];
     color?: TextStyle['color'];
+    lineHeight?: TextStyle['lineHeight'];
+    letterSpacing?: TextStyle['letterSpacing'];
 }
 
 type CTextProps = PropsWithChildren<CTextStyle & {
@@ -21,9 +23,26 @@ type CTextProps = PropsWithChildren<CTextStyle & {
 } & TextProps>
 
 const TextStyleContext = createContext<CTextStyle>({})
-export function CText({ children, italic, bold, fontFamily: newFontFamily, fontWeight: newFontWeight, fontSize: newFontSize, fontStyle: newFontStyle, color: newColor, style, ...props }: CTextProps): JSX.Element {
+export function CText({
+    children,
+    bold,
+    italic,
+    fontFamily: newFontFamily,
+    fontWeight: newFontWeight,
+    fontSize: newFontSize,
+    fontStyle: newFontStyle,
+    color: newColor,
+    lineHeight: newLineHeight,
+    letterSpacing: newLetterSpacing,
+    style,
+    ...props }: CTextProps): JSX.Element {
+
     // obtain parent context
-    const { fontFamily: parentFontFamily, fontWeight: parentFontWeight, fontSize: parentFontSize, fontStyle: parentFontStyle, color: parentColor } = useContext(TextStyleContext);
+    const { fontFamily: parentFontFamily, fontWeight: parentFontWeight, fontSize: parentFontSize, fontStyle: parentFontStyle, color: parentColor,
+        lineHeight: parentLineHeight,
+        letterSpacing: parentLetterSpacing,
+
+    } = useContext(TextStyleContext);
 
     const fontFamily = newFontFamily ?? parentFontFamily;
 
@@ -44,22 +63,23 @@ export function CText({ children, italic, bold, fontFamily: newFontFamily, fontW
     fontStyle ??= parentFontStyle;
 
     const fontSize = newFontSize ?? parentFontSize;
+
     const color = newColor ?? parentColor;
 
-    return (<TextStyleContext.Provider value={{
+    const lineHeight = newLineHeight ?? parentLineHeight;
+    const letterSpacing = newLetterSpacing ?? parentLetterSpacing;
+
+
+    const textProps = {
         fontFamily,
         fontSize,
         fontStyle,
         fontWeight,
-        color
-    }}>
-        <Text {...props} style={[style, {
-            fontFamily,
-            fontSize,
-            fontStyle,
-            fontWeight,
-            color
-        }]}>{children}</Text>
+        color,
+        lineHeight,
+        letterSpacing
+    };
+    return (<TextStyleContext.Provider value={textProps}>
+        <Text {...props} style={[style, textProps]}>{children}</Text>
     </TextStyleContext.Provider >);
 }
-
