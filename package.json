@@ -8,6 +8,7 @@
     "eject": "expo eject"
   },
   "dependencies": {
+    "@expo-google-fonts/playfair-display": "^0.2.0",
     "expo": "~42.0.1",
     "expo-status-bar": "~1.0.4",
     "native-base": "3.2.1-rc.1",

@@ -1,9 +1,10 @@
-import { ColorModeOptions, ITheme } from "native-base";
+import { ColorModeOptions, ITheme as NBITheme } from "native-base";
+import { TextStyle } from "react-native";
 
 /**
  * NativeBase font sizes.  This includes string to allow custom font sizes.
  */
-type FontSize =
+export type FontSize =
   | "2xs"
   | "xs"
   | "sm"
@@ -28,7 +29,7 @@ type FontFamily = "body" | "heading" | "mono" | string;
 /**
  * NativeBase font weight.  This includes string to allow custom font weight.
  */
-type FontWeight =
+export type FontWeight =
   | "hairline"
   | "thin"
   | "light"
@@ -51,9 +52,11 @@ type FontConfig = {
 };
 
 /**
- * This is a typesafe version of the NativeBase theme
+ * This is a typesafe version of the NativeBase theme.  The original ITheme 
+ * relies on `typeof` a theme, but that does not provide the necessary type
+ * safety guarantees nor does it allow any meaningful extensions to a theme.
  */
-type NativeBaseTheme = {
+export type ITheme = {
   fontSizes: { [fontSize: FontSize]: TextStyle["fontSize"] };
   letterSpacings: { [fontSize: FontSize]: TextStyle["letterSpacing"] };
   lineHeights: { [fontSize: FontSize]: TextStyle["lineHeight"] };
@@ -61,6 +64,7 @@ type NativeBaseTheme = {
   fontConfig: FontConfig;
   fontWeights: { [fontWeight: FontWeight]: number };
 
+  // TODO later
   borderWidths: any;
   breakpoints: any;
   colors: any;
@@ -71,4 +75,4 @@ type NativeBaseTheme = {
   opacity: any;
   components: any;
   config: ColorModeOptions;
-} & ITheme;
+} & NBITheme;

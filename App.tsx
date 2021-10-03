@@ -6,7 +6,7 @@ import { CText } from './CText';
 
 function Tx() {
 
-  const theme : ITheme = useTheme();
+  const theme: ITheme = useTheme();
   console.log(Object.keys(theme.colors));
   console.log(theme.config);
   // const {colors, letterSpacings, lineHeights, fontWeights ,fonts, fontSizes} = useTheme()
@@ -18,7 +18,7 @@ export default function App() {
     <NativeBaseProvider>
       <View style={styles.container}>
         <Tx />
-        <CText bold>Open up <CText italic>App.tsx</CText> to start <CText bold={false}>working</CText> on your <Text style={{ color: 'red' }}>interop!</Text></CText>
+        <CText bold>Open up <CText italic>App.tsx</CText> to start <CText bold={false}>working</CText> on your <Text style={{ color: 'red' }}>interop! <CText bold>REALLY!</CText></Text></CText>
         <StatusBar style="auto" />
       </View>
     </NativeBaseProvider>
