@@ -120,7 +120,30 @@ function computeFontWeight(fontWeights: ITheme['fontWeights'], bold?: boolean, n
  */
 function computeTextProps(theme: ITheme, contextProps: CTextStyle): TextStyle {
 
-    // TODO
-    return contextProps;
+    /**
+     * Font family so far;
+     */
+    let fontFamily = contextProps.fontFamily;
+
+    if (fontFamily) {
+        // at this point font family is defined, so check if it is an alias first
+
+        if (fontFamily in theme.fonts) {
+            fontFamily = theme.fonts[fontFamily];
+        }
+
+    }
+
+    if (fontFamily) {
+        // at this point fontFamily should be resolved to a font that could be a
+        // thene font or a system font.  So check if it is a theme font
+
+        if (fontFamily in theme.fontConfig) {
+            // font family is managed by native base
+            throw new Error("doing this soon")
+        }
+    }
+    // at this point fontFamily should be a system font or undefined
+    return { ...contextProps, fontFamily };
 
 }
