@@ -1,5 +1,6 @@
-import { ColorModeOptions, ITheme as NBITheme } from "native-base";
-import { TextStyle } from "react-native";
+import type { ColorModeOptions, ITheme as NBITheme } from "native-base";
+import type { TextStyle } from "react-native";
+import { ComponentTheme } from "./ComponentTheme";
 
 /**
  * NativeBase sizes.  This includes string to allow custom font sizes.
@@ -79,11 +80,15 @@ export type FontStyleProp = TextStyle & {
  */
 export type ITheme = {
   fontSizes: { [fontSize: Size]: TextStyle["fontSize"] };
-  letterSpacings: { [fontSize: Size]: TextStyle["letterSpacing"] };
-  lineHeights: { [fontSize: Size]: TextStyle["lineHeight"] };
+  letterSpacings: { [fontSize: Size]: string | TextStyle["letterSpacing"] };
+  lineHeights: { [fontSize: Size]: string | TextStyle["lineHeight"] };
   fonts: { [fontFamily: FontFamily]: string | FontStyleProp };
   fontConfig: FontConfig;
   fontWeights: { [fontWeight: FontWeight]: number };
+  components: {
+    [componentName: string]: ComponentTheme;
+  };
+  config: ColorModeOptions;
 
   // TODO later
   borderWidths: any;
@@ -94,8 +99,4 @@ export type ITheme = {
   space: any;
   shadows: any;
   opacity: any;
-  components: {
-    [componentName: string]: any;
-  };
-  config: ColorModeOptions;
 } & NBITheme;
