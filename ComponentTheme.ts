@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { ITheme } from "./NativeBaseTheme";
 import type { ColorSchemeName } from "react-native";
 import type { StylesProps } from "styled-system";
+
+import type { ITheme } from "./ITheme";
 
 export type StyleFunctionBaseProps = {
   theme: ITheme;

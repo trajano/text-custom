@@ -1,5 +1,5 @@
 import { FontSource, useFonts } from "expo-font";
-import { FontConfig } from "./NativeBaseTheme";
+import { FontConfig } from "./ITheme";
 
 type ExpoFontMeta = {
   key: string;

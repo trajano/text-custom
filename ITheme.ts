@@ -1,9 +1,11 @@
 import type { ColorModeOptions, ITheme as NBITheme } from "native-base";
 import type { TextStyle } from "react-native";
-import { ComponentTheme } from "./ComponentTheme";
+import type { BreakpointsConfig } from "./BreakpointsConfig";
+
+import type { ComponentTheme } from "./ComponentTheme";
 
 /**
- * NativeBase sizes.  This includes string to allow custom font sizes.
+ * NativeBase sizes.  This includes string to allow custom sizes.
  */
 export type Size =
   | "2xs"
@@ -21,11 +23,6 @@ export type Size =
   | "8xl"
   | "9xl"
   | string;
-
-/**
- * NativeBase font family.  This includes string to allow custom font weight.
- */
-type FontFamily = "body" | "heading" | "mono" | string;
 
 /**
  * NativeBase font weight.  This includes string to allow custom font weight.
@@ -74,6 +71,59 @@ export type FontStyleProp = TextStyle & {
 };
 
 /**
+ * Color value.  In case NB supports the other types in the future.
+ */
+type ColorValue = string;
+type ColorSwatch = {
+  /**
+   * Lightest value for the swatch.
+   */
+  50: ColorValue;
+  100: ColorValue;
+  200: ColorValue;
+  300: ColorValue;
+  400: ColorValue;
+  /**
+   * This is the base value for the swatch.
+   */
+  500: ColorValue;
+  600: ColorValue;
+  700: ColorValue;
+  800: ColorValue;
+  /**
+   * Darkest value for the swatch.
+   */
+  900: ColorValue;
+};
+
+type ColorsConfig = {
+  contrastThreshold: number;
+  white: ColorValue;
+  black: ColorValue;
+  lightText: ColorValue;
+  darkText: ColorValue;
+} & {
+  [colorScheme: string]: ColorSwatch;
+  danger: ColorSwatch;
+  error: ColorSwatch;
+  success: ColorSwatch;
+  warning: ColorSwatch;
+  muted: ColorSwatch;
+  primary: ColorSwatch;
+  info: ColorSwatch;
+  secondary: ColorSwatch;
+  light: ColorSwatch;
+  tertiary: ColorSwatch;
+  dark: ColorSwatch;
+};
+
+type FontsConfig = { [fontFamily: string]: string | FontStyleProp } & {
+  body: string;
+  heading: string;
+  mono: string;
+};
+
+/**
  * This is a typesafe version of the NativeBase theme.  The original ITheme
  * relies on `typeof` a theme, but that does not provide the necessary type
  * safety guarantees nor does it allow any meaningful extensions to a theme.
@@ -82,18 +132,18 @@ export type ITheme = {
   fontSizes: { [fontSize: Size]: TextStyle["fontSize"] };
   letterSpacings: { [fontSize: Size]: string | TextStyle["letterSpacing"] };
   lineHeights: { [fontSize: Size]: string | TextStyle["lineHeight"] };
-  fonts: { [fontFamily: FontFamily]: string | FontStyleProp };
+  fonts: FontsConfig;
   fontConfig: FontConfig;
   fontWeights: { [fontWeight: FontWeight]: number };
   components: {
     [componentName: string]: ComponentTheme;
   };
   config: ColorModeOptions;
+  colors: ColorsConfig;
+  breakpoints: BreakpointsConfig;
 
   // TODO later
   borderWidths: any;
-  breakpoints: any;
-  colors: any;
   radii: any;
   sizes: any;
   space: any;
