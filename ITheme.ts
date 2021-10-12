@@ -1,7 +1,8 @@
 import type { ColorModeOptions, ITheme as NBITheme } from "native-base";
 import type { TextStyle } from "react-native";
-import type { BreakpointsConfig } from "./BreakpointsConfig";
 
+import type { RecursivePartial } from "./RecursivePartial";
+import type { BreakpointsConfig } from "./BreakpointsConfig";
 import type { ComponentTheme } from "./ComponentTheme";
 
 /**
@@ -149,4 +150,10 @@ export type ITheme = {
   space: any;
   shadows: any;
   opacity: any;
-} & NBITheme;
+} & RecursivePartial<Omit<NBITheme, "components">>;
+
+/**
+ * Customizations to the theme.  It's a recursive partial of the original theme that would
+ * allow merging to the theme.
+ */
+export type ThemeCustomization = RecursivePartial<ITheme>;
